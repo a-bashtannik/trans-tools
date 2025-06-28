@@ -1,0 +1,86 @@
+## Task
+Perform a stylistic and substantive revision of a machine translation of memoirs from Polish to Russian. The text is an introduction to the diary of a Polish aristocrat from the early 20th century.
+
+## Main Requirements
+
+### 1. Preservation of Content
+- **MANDATORY preservation of all factual data:** names, dates, geographical names, historical terms
+- Preserve all bibliographic footnotes and references
+- Do not omit technical details (ISBN, publication information, captions for illustrations)
+- Preserve all mentions of organizations, positions, and titles
+
+### 2. Stylistic Adaptation
+- Adapt the text to a **lively memoir style**, preserving the author's personal tone
+- Break overly long sentences into shorter, more readable ones
+- Remove bureaucratic phrases and unnatural machine translation constructs
+- Maintain emotional tone and the author's digressions
+
+### 3. Linguistic Corrections
+- Correct spelling and punctuation errors
+- Replace Polish calques with natural Russian constructions
+- Clarify case endings and grammatical agreements
+- Verify the correct declension of Polish surnames in Russian
+- If the word contains both latin and Cyrillic characters and makes no sense, replace it with the correct Russian equivalent
+- Fix wrong gender agreements in nouns and adjectives
+
+### 4. Historical Accuracy
+- Most of events are from the early 20th century, in Ukraine, Poland, Russia and Europe
+- Verify historical terms and location names
+- Check the accuracy of geographical names
+- Ensure correct rendering of official names of organizations and institutions
+- Maintain accuracy in conveying titles and ranks
+
+### 5. CRITICAL HTML Conversion Requirements
+**YOU MUST CONVERT ALL MARKDOWN TO HTML - NO MARKDOWN SYNTAX ALLOWED IN OUTPUT**
+
+- **Images**: Convert `![](filename.jpg)` to `<img src="filename.jpg" alt="">`
+- Every paragraph must be wrapped in `<p>` tags, even if it is a single sentence
+- Preserve <br> tags for line breaks within paragraphs
+- Horizontal rules: Convert `---` to `<hr/>`
+- Bold/Italic: Convert `**text**` to `<strong>text</strong>`, `*text*` to `<em>text</em>`
+- Use `<strong>` for emphasis on important dates if they are crucial to understanding the text, and are in the start of a sentence
+- Use `<em>` for foreign words, book titles, or subtle emphasis
+- Use `<h1>`, `<h2>`, `<h3>` for clear section headings or chapter titles
+- Add `<figcaption>` tags under images when there's descriptive text about the image
+- Keep formatting simple and contextually appropriate - don't over-format
+- Only format text that clearly benefits from visual emphasis based on content meaning
+- Every footnote starting with <sup> must be wrapped in a <p> paragraph tag
+- If footer notes starts with digit, it's a bibliographic reference, wrap it in <sup> tags
+
+### 7. Output Structure Requirements
+- Use `<div class="page" data-page="N">` structure to wrap each page
+- DO NOT add summaries, comments, or explanations
+- DO NOT wrap response in ```html code blocks - return direct HTML without any markdown blocks
+- Your response must start directly with `<div class="page"` and end with `</div>`
+- NO markdown syntax (`![`, `---`, `**`, etc.) should remain in the final output
+
+### 8. What NOT to Do
+- Do not simplify complex historical realities
+- Do not remove "secondary" details—nuances are important in memoirs
+- Do not modernize the language—preserve the style of the era
+- Do not add personal explanations or embellishments
+- **NEVER leave any markdown syntax in the output**
+
+## Result Format
+Provide the revised text with:
+- Preservation of the original structure
+- Clean HTML formatting following the requirements above
+- Content language: Russian
+- Output format: Clean HTML only - NO MARKDOWN
+
+## Proper Names and Geographical Terms
+Печара - неправильно! Правильное название Печера!
+Печера, правильное склонение:
+- Что? Печера
+- Чего? Печеры
+- Кого? Печеру
+- Чем? Печерой
+- О ком? О чем? О печере
+Какой? Печерский (не Печарский)
+
+- Маłгожата = Малгожата
+
+All names must be adapted to Russian, without retaining Polish letters.
+
+## Quality Criteria
+The result should read like an **original Russian memoir text**, not a translation, while preserving **100% of the factual information** from the source and be properly formatted as clean HTML without any markdown syntax.

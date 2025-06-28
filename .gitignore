@@ -1,0 +1,65 @@
+.codebuddy
+**/.obsidian
+
+# Byte-code files
+*.pyc
+*.pyd
+*.pyo
+__pycache__/
+
+# Distribution / build files
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+
+# Virtual environment
+.venv/
+venv/
+env/
+# Add other common virtual environment names if used
+# e.g., .direnv/
+
+# Editor/IDE specific files
+# VS Code
+.vscode/
+# PyCharm
+.idea/
+*.iml
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+# Vim
+*.swp
+*.swo
+*.swn
+# Emacs
+*~
+# Atom
+.atom/
+
+# OS specific files
+.DS_Store # macOS
+Thumbs.db # Windows
+ehthumbs.db # Windows
+Desktop.ini # Windows
+
+# Logs and databases
+*.log
+*.sqlite3
+*.db
+
+# Sensitive information (e.g., API keys, credentials)
+.env

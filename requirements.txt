@@ -1,0 +1,6 @@
+marker-pdf
+openai
+python-dotenv
+PyPDF2
+fitz
+pymupdf
