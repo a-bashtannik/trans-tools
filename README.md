@@ -1,3 +1,6 @@
+> [!CAUTION]
+> USE AT YOUR OWN RISK. These tools are NOT production-ready and are intended solely for personal book translation purposes. They are experimental, unstable, and may cause failures, data loss, or unpredictable results. I provide NO GUARANTEE of their stability, reliability, or functionality. By using these tools, you accept full responsibility for any damages, errors, or consequences that may arise, including but not limited to system crashes, corrupted files, or complete loss of data. Proceed with extreme caution, as no support or liability will be provided under any circumstances.
+
 # PDF Processing Toolkit
 
 A Python toolkit for converting PDFs to translated content with OCR support, cleaning, and proofreading. Designed for processing documents like memoirs, books, or academic papers that need accurate translation.
