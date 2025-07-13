@@ -16,6 +16,12 @@ from dotenv import load_dotenv
 from marker.config.parser import ConfigParser
 from marker.converters.pdf import PdfConverter
 from marker.models import create_model_dict
+from rich.align import Align
+# Rich imports for beautiful terminal output
+from rich.console import Console
+from rich.panel import Panel
+from rich.table import Table
+from rich.text import Text
 
 
 class PDFToMarkdownConverter:
@@ -184,7 +190,8 @@ class PDFToMarkdownConverter:
 
             # Check if images were extracted and save them with page-specific names
             if hasattr(markdown_output, 'images') and markdown_output.images:
-                print(f"Found {len(markdown_output.images)} images on page {page_number} - filtering and saving them...")
+                print(
+                    f"Found {len(markdown_output.images)} images on page {page_number} - filtering and saving them...")
 
                 # Create images directory
                 output_dir.mkdir(parents=True, exist_ok=True)
@@ -268,7 +275,7 @@ class PDFToMarkdownConverter:
     def convert_all_pages_to_markdown(self, pdf_path: str, output_dir: str, merge: bool = False):
         """
         Convert all pages from PDF to Markdown files with OCR
-    
+
         Args:
             pdf_path: Path to the PDF file
             output_dir: Directory where to save markdown files and images
@@ -276,38 +283,38 @@ class PDFToMarkdownConverter:
         """
         pdf_path_obj = Path(pdf_path)
         output_dir_obj = Path(output_dir)
-    
+
         if not pdf_path_obj.exists():
             raise FileNotFoundError(f"PDF file not found: {pdf_path}")
-    
+
         # Create output directory
         output_dir_obj.mkdir(parents=True, exist_ok=True)
-    
+
         # Get total number of pages
         total_pages = self.get_page_count(pdf_path)
         print(f"PDF has {total_pages} pages. Converting all pages...")
-    
+
         # Print OCR configuration
         print(f"OCR Configuration:")
         print(f"  - Force OCR: {self.force_ocr}")
         print(f"  - Use LLM: {self.use_llm}")
         print(f"  - Merge pages: {merge}")
-    
+
         # Convert each page sequentially
         success_count = 0
         all_markdown_content = []
-        
+
         for page_number in range(1, total_pages + 1):
             try:
                 print(f"\n--- Converting page {page_number}/{total_pages} ---")
-    
+
                 # Convert page to markdown
                 markdown_content = self.convert_page_to_markdown(
                     pdf_path,
                     page_number,
                     output_dir_obj
                 )
-                
+
                 if merge:
                     # Add page number header and content to merged document
                     page_header = f"\n\n## Page {page_number}\n\n"
@@ -317,57 +324,108 @@ class PDFToMarkdownConverter:
                     # Create output filename for individual page
                     output_filename = f"{page_number}.md"
                     output_path = output_dir_obj / output_filename
-    
+
                     # Save markdown file
                     with open(output_path, 'w', encoding='utf-8') as f:
                         f.write(markdown_content)
-    
+
                     print(f"Saved: {output_path}")
-                
+
                 success_count += 1
-    
+
             except Exception as e:
                 print(f"Error converting page {page_number}: {str(e)}")
                 continue
-    
+
         # If merging pages, save the combined content to a single file
         if merge and all_markdown_content:
             # Get base filename without extension
             base_filename = pdf_path_obj.stem
             merged_filename = f"{base_filename}.md"
             merged_path = output_dir_obj / merged_filename
-            
+
             # Add document title as H1 heading
             document_title = f"# {base_filename}\n\n"
             merged_content = document_title + "".join(all_markdown_content)
-            
+
             # Save merged markdown file
             with open(merged_path, 'w', encoding='utf-8') as f:
                 f.write(merged_content)
-                
+
             print(f"\nSaved merged document: {merged_path}")
-    
+
         print(f"\n✅ Conversion complete! {success_count}/{total_pages} pages successfully converted")
         print(f"📁 Output saved to: {output_dir_obj}")
-        
+
         if merge:
             print(f"📄 Merged output saved as: {merged_filename}")
         else:
             print(f"💡 Files are named as 1.md, 2.md, 3.md, etc.")
 
 
+def show_help():
+    """Display concise help information using Rich"""
+    console = Console()
+
+    # Header
+    title = Text("PDF to Markdown Converter", style="bold magenta")
+    subtitle = Text("Convert PDF pages to markdown files with OCR support", style="cyan")
+
+    console.print()
+    console.print(Panel(
+        Align.center(title + "\n" + subtitle),
+        border_style="bright_blue"
+    ))
+    console.print()
+
+    # Usage
+    console.print("[bold yellow]Usage:[/bold yellow]")
+    console.print(
+        "  [cyan]python pdf_to_markdown.py[/cyan] [green]<pdf_file>[/green] [green]<output_dir>[/green] [blue][OPTIONS][/blue]")
+    console.print()
+
+    # Examples
+    console.print("[bold yellow]Examples:[/bold yellow]")
+    console.print("  [dim]# Basic conversion[/dim]")
+    console.print("  python pdf_to_markdown.py document.pdf ./output/")
+    console.print()
+    console.print("  [dim]# With OCR for scanned PDFs[/dim]")
+    console.print("  python pdf_to_markdown.py document.pdf ./output/ --force-ocr")
+    console.print()
+    console.print("  [dim]# Merge all pages into one file[/dim]")
+    console.print("  python pdf_to_markdown.py document.pdf ./output/ --merge")
+    console.print()
+
+    # Options
+    options = Table(show_header=False, box=None, padding=(0, 2))
+    options.add_column(style="cyan", no_wrap=True)
+    options.add_column(style="white")
+
+    options.add_row("--force-ocr", "Force OCR on all pages")
+    options.add_row("--use-llm", "Enhanced AI processing (needs OPENAI_API_KEY)")
+    options.add_row("--merge", "Save as single file instead of separate pages")
+    options.add_row("-h, --help", "Show this help")
+
+    console.print("[bold yellow]Options:[/bold yellow]")
+    console.print(options)
+    console.print()
+
+    # Output
+    console.print(
+        "[bold yellow]Output:[/bold yellow] Creates numbered files [green]1.md[/green], [green]2.md[/green], [green]3.md[/green], etc. with extracted images")
+    console.print()
+
+
 def parse_arguments():
-    """Parse command line arguments"""
+    """Parse command line arguments with custom help handling"""
+    # Check if help is requested or no arguments provided
+    if len(sys.argv) == 1 or '-h' in sys.argv or '--help' in sys.argv:
+        show_help()
+        sys.exit(0)
+
     parser = argparse.ArgumentParser(
         description="Convert PDF to Markdown with OCR support using Marker",
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog="""
-Examples:
-  python pdf_to_markdown.py document.pdf ./output/
-  python pdf_to_markdown.py --force-ocr document.pdf ./output/
-  python pdf_to_markdown.py --use-llm document.pdf ./output/
-      python pdf_to_markdown.py --merge document.pdf ./output/
-"""
+        add_help=False  # Disable default help to use our custom one
     )
 
     parser.add_argument("pdf_path", help="Path to the PDF file")
@@ -390,7 +448,7 @@ Examples:
         action="store_true",
         help="Save all pages as a single markdown file instead of separate files"
     )
-    
+
     return parser.parse_args()
 
 

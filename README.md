@@ -7,15 +7,20 @@ A Python toolkit for converting PDFs to translated content with OCR support, cle
 
 ## Setup
 
+### Important notice: Python version required = 3.13 
+
 Install dependencies:
 ```bash
-pip install python-dotenv openai pathlib fitz pymupdf marker-pdf
+pip install pymupdf python-dotenv pdftext marker-pdf rich
+
+# python-dotenv openai pathlib
 ```
 
 Create `.env` file:
 ```bash
 OPENAI_API_KEY=your_key_here
 OPENAI_MODEL=gpt-4o
+OPENAI_BASE_URL=https://api.openai.com/v1
 ```
 
 Create prompt files: `prompt.txt` for translation, `prompt.enhance.txt` for proofreading.

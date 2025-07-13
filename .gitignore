@@ -63,3 +63,5 @@ Desktop.ini # Windows
 
 # Sensitive information (e.g., API keys, credentials)
 .env
+
+books/**/*.*
