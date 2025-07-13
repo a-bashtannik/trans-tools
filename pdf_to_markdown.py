@@ -92,6 +92,21 @@ class PDFToMarkdownConverter:
             print(f"Error initializing converter: {e}")
             raise
 
+    def parse_pages(self, page_range: str) -> List[int]:
+        """Parse page range string into list of page numbers."""
+        if not page_range:
+            return []
+
+        pages = set()
+        for part in page_range.split(','):
+            part = part.strip()
+            if '-' in part:
+                start, end = map(int, part.split('-'))
+                pages.update(range(start, end + 1))
+            else:
+                pages.add(int(part))
+        return sorted(list(pages))
+
     def get_page_count(self, pdf_path: str) -> int:
         """
         Get the total number of pages in the PDF
@@ -272,7 +287,8 @@ class PDFToMarkdownConverter:
                 except:
                     pass  # Ignore cleanup errors
 
-    def convert_all_pages_to_markdown(self, pdf_path: str, output_dir: str, merge: bool = False):
+    def convert_all_pages_to_markdown(self, pdf_path: str, output_dir: str, merge: bool = False,
+                                      page_range: str = None):
         """
         Convert all pages from PDF to Markdown files with OCR
 
@@ -280,6 +296,7 @@ class PDFToMarkdownConverter:
             pdf_path: Path to the PDF file
             output_dir: Directory where to save markdown files and images
             merge: If True, save all pages as one single file instead of separate files
+            page_range: Page range to convert (examples: "5", "1,3,5", "1-5", "1-3,7,10-12")
         """
         pdf_path_obj = Path(pdf_path)
         output_dir_obj = Path(output_dir)
@@ -292,21 +309,36 @@ class PDFToMarkdownConverter:
 
         # Get total number of pages
         total_pages = self.get_page_count(pdf_path)
-        print(f"PDF has {total_pages} pages. Converting all pages...")
+
+        # Determine which pages to convert
+        if page_range:
+            target_pages = self.parse_pages(page_range)
+            # Validate page numbers
+            invalid_pages = [p for p in target_pages if p < 1 or p > total_pages]
+            if invalid_pages:
+                raise ValueError(f"Invalid page numbers: {invalid_pages}. PDF has {total_pages} pages.")
+            pages_to_convert = target_pages
+            print(f"PDF has {total_pages} pages. Converting selected pages: {pages_to_convert}")
+        else:
+            pages_to_convert = list(range(1, total_pages + 1))
+            print(f"PDF has {total_pages} pages. Converting all pages...")
 
         # Print OCR configuration
         print(f"OCR Configuration:")
         print(f"  - Force OCR: {self.force_ocr}")
         print(f"  - Use LLM: {self.use_llm}")
         print(f"  - Merge pages: {merge}")
+        if page_range:
+            print(f"  - Page range: {page_range}")
 
         # Convert each page sequentially
         success_count = 0
         all_markdown_content = []
 
-        for page_number in range(1, total_pages + 1):
+        for page_number in pages_to_convert:
             try:
-                print(f"\n--- Converting page {page_number}/{total_pages} ---")
+                print(
+                    f"\n--- Converting page {page_number} ({pages_to_convert.index(page_number) + 1}/{len(pages_to_convert)}) ---")
 
                 # Convert page to markdown
                 markdown_content = self.convert_page_to_markdown(
@@ -341,11 +373,17 @@ class PDFToMarkdownConverter:
         if merge and all_markdown_content:
             # Get base filename without extension
             base_filename = pdf_path_obj.stem
-            merged_filename = f"{base_filename}.md"
+            if page_range:
+                # Add page range info to filename
+                safe_range = page_range.replace(',', '_').replace('-', 'to')
+                merged_filename = f"{base_filename}_pages_{safe_range}.md"
+            else:
+                merged_filename = f"{base_filename}.md"
             merged_path = output_dir_obj / merged_filename
 
             # Add document title as H1 heading
-            document_title = f"# {base_filename}\n\n"
+            title_suffix = f" (Pages: {page_range})" if page_range else ""
+            document_title = f"# {base_filename}{title_suffix}\n\n"
             merged_content = document_title + "".join(all_markdown_content)
 
             # Save merged markdown file
@@ -354,7 +392,7 @@ class PDFToMarkdownConverter:
 
             print(f"\nSaved merged document: {merged_path}")
 
-        print(f"\n✅ Conversion complete! {success_count}/{total_pages} pages successfully converted")
+        print(f"\n✅ Conversion complete! {success_count}/{len(pages_to_convert)} pages successfully converted")
         print(f"📁 Output saved to: {output_dir_obj}")
 
         if merge:
@@ -392,6 +430,10 @@ def show_help():
     console.print("  [dim]# With OCR for scanned PDFs[/dim]")
     console.print("  python pdf_to_markdown.py document.pdf ./output/ --force-ocr")
     console.print()
+    console.print("  [dim]# Convert specific pages[/dim]")
+    console.print("  python pdf_to_markdown.py document.pdf ./output/ --pages \"1,3,5\"")
+    console.print("  python pdf_to_markdown.py document.pdf ./output/ --pages \"1-5,10-12\"")
+    console.print()
     console.print("  [dim]# Merge all pages into one file[/dim]")
     console.print("  python pdf_to_markdown.py document.pdf ./output/ --merge")
     console.print()
@@ -404,6 +446,7 @@ def show_help():
     options.add_row("--force-ocr", "Force OCR on all pages")
     options.add_row("--use-llm", "Enhanced AI processing (needs OPENAI_API_KEY)")
     options.add_row("--merge", "Save as single file instead of separate pages")
+    options.add_row("--pages", "Page range to convert (e.g., '5', '1,3,5', '1-5', '1-3,7,10-12')")
     options.add_row("-h, --help", "Show this help")
 
     console.print("[bold yellow]Options:[/bold yellow]")
@@ -449,6 +492,11 @@ def parse_arguments():
         help="Save all pages as a single markdown file instead of separate files"
     )
 
+    parser.add_argument(
+        "--pages",
+        help="Page range to convert (examples: '5', '1,3,5', '1-5', '1-3,7,10-12')"
+    )
+
     return parser.parse_args()
 
 
@@ -465,6 +513,8 @@ def main():
         print(f"🌍 Languages: {', '.join(languages)}")
         if args.merge:
             print(f"📎 Merge mode: ON - all pages will be saved as a single file")
+        if args.pages:
+            print(f"📃 Page range: {args.pages}")
 
         # Initialize converter with OCR configuration
         converter = PDFToMarkdownConverter(
@@ -473,10 +523,15 @@ def main():
             use_llm=args.use_llm
         )
 
-        # Convert all pages to markdown
-        converter.convert_all_pages_to_markdown(args.pdf_path, args.output_dir, merge=args.merge)
+        # Convert pages to markdown
+        converter.convert_all_pages_to_markdown(
+            args.pdf_path,
+            args.output_dir,
+            merge=args.merge,
+            page_range=args.pages
+        )
 
-        print(f"\n🎉 All pages successfully converted from {args.pdf_path}")
+        print(f"\n🎉 Pages successfully converted from {args.pdf_path}")
         print(f"📁 Output saved to: {args.output_dir}")
         if not args.merge:
             print(f"💡 Files are named as 1.md, 2.md, 3.md, etc.")
